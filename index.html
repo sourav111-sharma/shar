@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUMINA — Interactive Mirrors &amp; Lenses Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="antialiased selection:bg-[#00e5ff]/30">
+
+  <!-- Ambient Nebula, Floating Light Motes & Confetti Layers -->
+  <div class="nebula-backdrop"></div>
+  <canvas id="motesCanvas"></canvas>
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Notification Toasts -->
+  <div id="toastStack" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 pointer-events-none"></div>
+
+  <!-- =========================================================================
+       TOP STICKY NAVIGATION BAR
+       ========================================================================= -->
+  <header class="sticky top-0 z-40 top-nav">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Logo -->
+      <a href="#hero" class="flex items-center gap-2.5 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00e5ff] via-[#fbbf24] to-[#ff2e93] p-[2px] shadow-lg shadow-[#00e5ff]/25 group-hover:scale-105 transition">
+          <div class="w-full h-full rounded-[10px] bg-[#050814] flex items-center justify-center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2C7.5 7 7.5 17 12 22C16.5 17 16.5 7 12 2Z" fill="rgba(0,229,255,0.22)" stroke="#00e5ff" stroke-width="2"/>
+              <line x1="2" y1="12" x2="22" y2="12" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="2.5 2.5"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="font-black text-sm sm:text-base tracking-wider leading-tight">
+            LUMINA <span class="text-[#00e5ff]">//</span> OPTICS STUDIO
+          </div>
+          <div class="font-mono-code text-[10px] text-muted leading-tight">
+            Interactive Light &amp; Image Playground
+          </div>
+        </div>
+      </a>
+
+      <!-- Quick Section Links -->
+      <nav class="hidden xl:flex items-center gap-1 glass-inset p-1 rounded-xl text-xs font-semibold">
+        <a href="#rules-section" class="px-3 py-1.5 rounded-lg hover:text-[#fbbf24] transition">1. Golden Rules</a>
+        <a href="#big-lab" class="px-3 py-1.5 rounded-lg hover:text-[#00e5ff] transition">2. Big Light Lab</a>
+        <a href="#laser-puzzle" class="px-3 py-1.5 rounded-lg hover:text-[#ff2e93] transition">3. Laser Puzzle</a>
+        <a href="#missions-section" class="px-3 py-1.5 rounded-lg hover:text-[#10b981] transition">4. Missions</a>
+        <a href="#wonders-section" class="px-3 py-1.5 rounded-lg hover:text-[#ff2e93] transition">5. Real World</a>
+        <a href="#quiz-section" class="px-3 py-1.5 rounded-lg hover:text-[#fbbf24] transition">6. Practice</a>
+      </nav>
+
+      <!-- Live Explorer Rank Badge + Export + Sound + Theme Toggles -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#fbbf24]/15 via-[#00e5ff]/15 to-[#ff2e93]/15 border border-[#fbbf24]/45 shadow-md">
+          <span class="text-sm">✨</span>
+          <div class="leading-tight min-w-[78px]">
+            <div class="flex items-center justify-between gap-2">
+              <span id="rankTitle" class="text-[11px] sm:text-xs font-extrabold text-[#fbbf24]">Novice</span>
+              <span class="font-mono-code text-[10px] text-muted"><span id="xpCounter" class="font-bold text-[#00e5ff]">0</span> XP</span>
+            </div>
+            <div class="w-full h-1.5 rounded-full bg-slate-900/80 overflow-hidden mt-1">
+              <div id="rankBarFill" class="h-full bg-gradient-to-r from-[#00e5ff] via-[#fbbf24] to-[#ff2e93] transition-all duration-300" style="width: 6%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <button id="exportFolderBtn" type="button" title="Inspect Project Files"
+          class="px-3 py-2 rounded-full bg-[#00e5ff]/15 hover:bg-[#00e5ff]/25 border border-[#00e5ff]/50 text-[#00e5ff] text-xs font-extrabold flex items-center gap-1.5 transition">
+          <span>📦</span>
+          <span class="hidden sm:inline">Project Files</span>
+        </button>
+
+        <button id="soundToggle" type="button" title="Toggle Sound Effects"
+          class="px-3 py-2 rounded-full glass-inset hover:border-[#00e5ff] text-xs font-bold flex items-center gap-1.5 transition">
+          <span id="soundStatusText">🔊 Sound</span>
+        </button>
+
+        <button id="themeToggle" type="button" title="Toggle Museum Light / Dark Theme"
+          class="px-3 py-2 rounded-full glass-inset hover:border-[#fbbf24] text-xs font-bold flex items-center gap-1.5 transition">
+          <span>🌓 Theme</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-9 space-y-14">
+
+    <!-- =========================================================================
+         HERO SECTION
+         ========================================================================= -->
+    <section id="hero" class="relative overflow-hidden glass-card rounded-3xl p-6 sm:p-10 border-[#00e5ff]/30">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-6 space-y-5 relative z-10">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#00e5ff]/15 border border-[#00e5ff]/35 font-mono-code text-[11px] font-bold text-[#00e5ff]">
+            <span>🌌</span>
+            <span>INTERACTIVE OPTICAL OBSERVATORY</span>
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-[52px] font-black tracking-tight leading-[1.07]">
+            Bend Light. Create Images.
+            <span class="block bg-gradient-to-r from-[#00e5ff] via-[#fbbf24] to-[#ff2e93] bg-clip-text text-transparent">
+              Master Mirrors &amp; Lenses.
+            </span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-muted leading-relaxed">
+            Control glowing photon beams in real time, master the <strong class="text-[#fbbf24]">3 Golden Rules of Image Formation</strong>, ignite solar focal hotspots, and discover how curved glass shapes the world around you.
+          </p>
+
+          <div class="pt-1 flex flex-wrap items-center gap-3.5">
+            <a href="#rules-section"
+              class="px-6 py-3.5 rounded-2xl font-extrabold text-sm sm:text-base bg-gradient-to-r from-[#fbbf24] to-[#f59e0b] text-[#050814] shadow-lg shadow-[#fbbf24]/25 hover:brightness-110 transition">
+              Start With the 3 Rules
+            </a>
+            <a href="#big-lab"
+              class="px-6 py-3.5 rounded-2xl font-extrabold text-sm sm:text-base glass-inset border-[#00e5ff]/50 text-[#00e5ff] hover:bg-[#00e5ff]/15 transition">
+              Jump Into Big Light Lab
+            </a>
+            <a href="#laser-puzzle"
+              class="px-5 py-3.5 rounded-2xl font-extrabold text-sm sm:text-base bg-[#ff2e93]/15 border border-[#ff2e93]/50 text-[#ff2e93] hover:bg-[#ff2e93]/25 transition">
+              🔦 Play Laser Puzzle
+            </a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-3">
+          <div class="relative w-full aspect-[16/10] rounded-2xl overflow-hidden bg-[#040712] border border-[#00e5ff]/35 shadow-2xl">
+            <canvas id="heroArrayCanvas" width="640" height="400" class="w-full h-full block cursor-grab active:cursor-grabbing touch-none"></canvas>
+            <div class="pointer-events-none absolute top-3 left-3 px-3 py-1 rounded-full bg-[#050814]/85 border border-white/15 font-mono-code text-[11px] text-slate-200 backdrop-blur-md">
+              ✨ Drag the Light Orb or switch optical cavities!
+            </div>
+            <div class="absolute bottom-3 left-3 flex items-center gap-1 p-1 rounded-xl bg-[#050814]/85 border border-white/15 backdrop-blur-md">
+              <button type="button" data-hero-mode="biconvex" class="hero-mode-btn px-2.5 py-1 rounded-lg text-[11px] font-bold bg-[#00e5ff] text-[#050814] transition">Focus Cavity</button>
+              <button type="button" data-hero-mode="diverging" class="hero-mode-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white transition">Prism Fan</button>
+              <button type="button" data-hero-mode="twin_focus" class="hero-mode-btn px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-300 hover:text-white transition">Twin Lens</button>
+            </div>
+            <button id="pulseWaveBtn" type="button"
+              class="absolute bottom-3 right-3 px-4 py-2 rounded-xl font-extrabold text-xs bg-gradient-to-r from-[#00e5ff] to-[#ff2e93] text-[#050814] shadow-lg shadow-[#00e5ff]/30 hover:scale-105 active:scale-95 transition">
+              ✨ Pulse Wave
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 1: THE 3 GOLDEN RULES OF IMAGE FORMATION
+         ========================================================================= -->
+    <section id="rules-section" class="space-y-6 scroll-mt-24">
+      <div class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-[#fbbf24]/35">
+        <div>
+          <span class="font-mono-code text-xs font-bold uppercase tracking-widest text-[#fbbf24]">
+            01 • LEARN THE FUNDAMENTALS FIRST
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-black mt-0.5">
+            The 3 Golden Rules of Image Formation
+          </h2>
+          <p class="text-sm text-muted mt-1">
+            Switch between all 4 optical devices below and click <strong class="text-[#00e5ff]">"⚡ Fire Photon!"</strong> on each card to watch how every ray bends or bounces!
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:flex items-center gap-1.5 p-1.5 rounded-2xl glass-inset">
+          <button type="button" data-rule-device="concave_mirror" class="rule-pill active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold">
+            Concave Mirror
+          </button>
+          <button type="button" data-rule-device="convex_mirror" class="rule-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold">
+            Convex Mirror
+          </button>
+          <button type="button" data-rule-device="convex_lens" class="rule-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold">
+            Convex Lens
+          </button>
+          <button type="button" data-rule-device="concave_lens" class="rule-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold">
+            Concave Lens
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <article class="glass-card rounded-3xl p-5 flex flex-col justify-between space-y-4 border-[#fbbf24]/40">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full font-mono-code text-[11px] font-bold bg-[#fbbf24]/20 text-[#fbbf24] border border-[#fbbf24]/40">
+                RULE 1 • SOLAR GOLD
+              </span>
+              <span class="font-mono-code text-xs text-muted">Parallel → F</span>
+            </div>
+            <h3 class="text-xl font-extrabold">The Parallel Highway</h3>
+            <p id="ruleText0" class="text-sm text-muted leading-relaxed">
+              Travels <strong class="text-[#fbbf24]">parallel</strong> to the principal axis, then reflects straight through the real <strong class="text-[#00e5ff]">Focus (F)</strong>.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-full aspect-[280/160] rounded-2xl overflow-hidden bg-[#040712] border border-slate-800">
+              <canvas id="ruleCanvas0" width="280" height="160" class="w-full h-full block"></canvas>
+            </div>
+            <button type="button" data-fire-rule="0"
+              class="w-full py-2.5 rounded-xl font-extrabold text-xs sm:text-sm bg-[#fbbf24]/20 hover:bg-[#fbbf24]/30 text-[#fbbf24] border border-[#fbbf24]/45 transition">
+              ⚡ Fire Photon!
+            </button>
+          </div>
+        </article>
+
+        <article class="glass-card rounded-3xl p-5 flex flex-col justify-between space-y-4 border-[#ff2e93]/40">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full font-mono-code text-[11px] font-bold bg-[#ff2e93]/20 text-[#ff2e93] border border-[#ff2e93]/40">
+                RULE 2 • NEON MAGENTA
+              </span>
+              <span id="ruleTag1" class="font-mono-code text-xs text-muted">Pole (P) Bounce</span>
+            </div>
+            <h3 class="text-xl font-extrabold">The Center Shortcut</h3>
+            <p id="ruleText1" class="text-sm text-muted leading-relaxed">
+              Strikes the center <strong class="text-[#ff2e93]">Pole (P)</strong> and bounces off symmetrically at the exact same angle.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-full aspect-[280/160] rounded-2xl overflow-hidden bg-[#040712] border border-slate-800">
+              <canvas id="ruleCanvas1" width="280" height="160" class="w-full h-full block"></canvas>
+            </div>
+            <button type="button" data-fire-rule="1"
+              class="w-full py-2.5 rounded-xl font-extrabold text-xs sm:text-sm bg-[#ff2e93]/20 hover:bg-[#ff2e93]/30 text-[#ff2e93] border border-[#ff2e93]/45 transition">
+              ⚡ Fire Photon!
+            </button>
+          </div>
+        </article>
+
+        <article class="glass-card rounded-3xl p-5 flex flex-col justify-between space-y-4 border-[#00e5ff]/40">
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full font-mono-code text-[11px] font-bold bg-[#00e5ff]/20 text-[#00e5ff] border border-[#00e5ff]/40">
+                RULE 3 • ELECTRIC CYAN
+              </span>
+              <span class="font-mono-code text-xs text-muted">F → Parallel</span>
+            </div>
+            <h3 class="text-xl font-extrabold">The Focus Reverse</h3>
+            <p id="ruleText2" class="text-sm text-muted leading-relaxed">
+              Passes through the <strong class="text-[#00e5ff]">Focus (F)</strong> first, then emerges strictly <strong class="text-[#fbbf24]">parallel</strong> to the principal axis.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-full aspect-[280/160] rounded-2xl overflow-hidden bg-[#040712] border border-slate-800">
+              <canvas id="ruleCanvas2" width="280" height="160" class="w-full h-full block"></canvas>
+            </div>
+            <button type="button" data-fire-rule="2"
+              class="w-full py-2.5 rounded-xl font-extrabold text-xs sm:text-sm bg-[#00e5ff]/20 hover:bg-[#00e5ff]/30 text-[#00e5ff] border border-[#00e5ff]/45 transition">
+              ⚡ Fire Photon!
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <div class="glass-card rounded-3xl p-5 sm:p-6 border-[#00e5ff]/30">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-2xl p-4 sm:p-5 border-2 border-[#fbbf24]/75 bg-[#fbbf24]/10 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-[#fbbf24]/20 border border-[#fbbf24]/50 flex items-center justify-center text-2xl shrink-0">
+              🎬
+            </div>
+            <div class="space-y-1">
+              <div class="font-extrabold text-base sm:text-lg text-[#fbbf24]">
+                Real Image
+              </div>
+              <div class="font-mono-code text-[11px] font-bold uppercase tracking-wider">
+                Solid Rays Meet • Upside-Down • Caught on Screen
+              </div>
+              <p class="text-xs sm:text-sm text-muted leading-relaxed pt-1">
+                Formed when actual light rays physically cross each other. Always inverted and can be projected directly onto a cinema screen or wall!
+              </p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl p-4 sm:p-5 border-2 border-[#00e5ff]/75 bg-[#00e5ff]/10 flex items-start gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-[#00e5ff]/20 border border-[#00e5ff]/50 flex items-center justify-center text-2xl shrink-0">
+              🪞
+            </div>
+            <div class="space-y-1">
+              <div class="font-extrabold text-base sm:text-lg text-[#00e5ff]">
+                Virtual Image
+              </div>
+              <div class="font-mono-code text-[11px] font-bold uppercase tracking-wider">
+                Dashed Backward Extensions • Upright • Seen Inside Glass
+              </div>
+              <p class="text-xs sm:text-sm text-muted leading-relaxed pt-1">
+                Formed when diverging rays only appear to meet along dashed backward trace lines. Always right-side up and visible when looking into the mirror or lens!
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 2: THE GIANT OPTICAL BENCH
+         ========================================================================= -->
+    <section id="big-lab" class="space-y-5 scroll-mt-24">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <span class="font-mono-code text-xs font-bold uppercase tracking-widest text-[#00e5ff]">
+            02 • INTERACTIVE EXPERIMENTATION BENCH
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-black mt-0.5">
+            The Big Light Lab
+          </h2>
+        </div>
+        <div class="text-xs sm:text-sm text-muted">
+          Tip: Select <strong class="text-[#fbbf24]">Very Far (∞)</strong> on a Concave Mirror or Convex Lens to ignite <strong class="text-[#fbbf24]">Solar Spark Mode 🔥</strong>!
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <button type="button" data-lab-device="concave_mirror" class="device-tab active rounded-2xl p-3.5 text-left flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-[#00e5ff]/15 border border-[#00e5ff]/40 flex items-center justify-center shrink-0">
+            <svg width="28" height="34" viewBox="0 0 28 34" fill="none">
+              <path d="M19 3 C9 11, 9 23, 19 31" stroke="#00e5ff" stroke-width="3.2" stroke-linecap="round"/>
+              <path d="M21 6 L25 4 M20 12 L24 10 M19 17 L23 15 M20 22 L24 20 M21 28 L25 26" stroke="#94a3b8" stroke-width="1.6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-extrabold text-sm sm:text-base leading-tight">Concave Mirror</div>
+            <div class="text-xs text-[#00e5ff] font-medium">Curved In • Converging</div>
+          </div>
+        </button>
+
+        <button type="button" data-lab-device="convex_mirror" class="device-tab rounded-2xl p-3.5 text-left flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-[#ff2e93]/15 border border-[#ff2e93]/40 flex items-center justify-center shrink-0">
+            <svg width="28" height="34" viewBox="0 0 28 34" fill="none">
+              <path d="M9 3 C19 11, 19 23, 9 31" stroke="#ff2e93" stroke-width="3.2" stroke-linecap="round"/>
+              <path d="M7 6 L3 4 M8 12 L4 10 M9 17 L5 15 M8 22 L4 20 M7 28 L3 26" stroke="#94a3b8" stroke-width="1.6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-extrabold text-sm sm:text-base leading-tight">Convex Mirror</div>
+            <div class="text-xs text-[#ff2e93] font-medium">Bulging Out • Diverging</div>
+          </div>
+        </button>
+
+        <button type="button" data-lab-device="convex_lens" class="device-tab rounded-2xl p-3.5 text-left flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-[#fbbf24]/15 border border-[#fbbf24]/40 flex items-center justify-center shrink-0">
+            <svg width="28" height="34" viewBox="0 0 28 34" fill="none">
+              <path d="M14 3 C23 11, 23 23, 14 31 C5 23, 5 11, 14 3 Z" fill="rgba(251,191,36,0.24)" stroke="#fbbf24" stroke-width="2.6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-extrabold text-sm sm:text-base leading-tight">Convex Lens</div>
+            <div class="text-xs text-[#fbbf24] font-medium">Thick Middle • Converging</div>
+          </div>
+        </button>
+
+        <button type="button" data-lab-device="concave_lens" class="device-tab rounded-2xl p-3.5 text-left flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-[#10b981]/15 border border-[#10b981]/40 flex items-center justify-center shrink-0">
+            <svg width="28" height="34" viewBox="0 0 28 34" fill="none">
+              <path d="M5 3 L23 3 C17 11, 17 23, 23 31 L5 31 C11 23, 11 11, 5 3 Z" fill="rgba(16,185,129,0.22)" stroke="#10b981" stroke-width="2.6"/>
+            </svg>
+          </div>
+          <div>
+            <div class="font-extrabold text-sm sm:text-base leading-tight">Concave Lens</div>
+            <div class="text-xs text-[#10b981] font-medium">Thin Middle • Diverging</div>
+          </div>
+        </button>
+      </div>
+
+      <div id="benchWrapper" class="glass-card rounded-3xl p-3.5 sm:p-5 space-y-4 border-[#00e5ff]/35">
+        <div class="flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex flex-wrap items-center gap-1 p-1 rounded-xl glass-inset">
+            <button type="button" data-obj="candle" class="obj-pill px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[#fbbf24]/25 text-[#fbbf24] border border-[#fbbf24]/50 transition">🕯️ Candle</button>
+            <button type="button" data-obj="rocket" class="obj-pill px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 border border-transparent transition">🚀 Rocket</button>
+            <button type="button" data-obj="duck" class="obj-pill px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 border border-transparent transition">🦆 Duck</button>
+            <button type="button" data-obj="pencil" class="obj-pill px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 border border-transparent transition">✏️ Pencil</button>
+            <button type="button" data-obj="butterfly" class="obj-pill px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 border border-transparent transition">🦋 Butterfly</button>
+            <button type="button" data-obj="diamond" class="obj-pill px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-white/10 border border-transparent transition">💎 Diamond</button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button id="rainbowPill" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold glass-inset hover:border-[#ff2e93] transition">🌈 Rainbow Rays: OFF</button>
+            <button id="wavefrontsPill" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold glass-inset hover:border-[#00e5ff] transition">〰️ Wavefronts: OFF</button>
+            <button id="fullscreenBenchBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold glass-inset hover:border-[#fbbf24] transition">⛶ Fullscreen</button>
+          </div>
+        </div>
+
+        <div class="relative w-full aspect-[1280/540] rounded-2xl overflow-hidden bg-[#040712] border border-[#00e5ff]/35 shadow-inner">
+          <canvas id="benchCanvas" width="1280" height="540"></canvas>
+          <div id="benchHintBadge" class="pointer-events-none absolute top-3 left-3 px-3 py-1 rounded-full bg-[#050814]/85 border border-white/15 font-mono-code text-[11px] text-slate-200 backdrop-blur-md">
+            🖱️ Drag the Object along the bench, drag its tip to resize, or drag Focus (F)!
+          </div>
+          <div id="solarBadge" class="hidden pointer-events-none absolute top-3 right-3 px-3.5 py-1 rounded-full bg-[#fbbf24]/20 border border-[#fbbf24] font-mono-code text-xs font-bold text-[#fbbf24] animate-pulse">
+            🔥 SOLAR SPARK IGNITED AT FOCUS (F)!
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="font-mono-code text-[11px] font-bold uppercase tracking-wider text-muted mr-1">Position Presets:</span>
+          <button type="button" data-preset="infinity" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-bold glass-inset hover:border-[#fbbf24] text-[#fbbf24] transition">☀️ Very Far (∞)</button>
+          <button type="button" data-preset="beyond_2f" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold glass-inset hover:border-[#00e5ff] transition">Beyond 2F / C</button>
+          <button type="button" data-preset="at_2f" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold glass-inset hover:border-[#00e5ff] transition">At 2F / C (1:1)</button>
+          <button type="button" data-preset="between_f_2f" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold glass-inset hover:border-[#00e5ff] transition">Between F &amp; 2F</button>
+          <button type="button" data-preset="at_f" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold glass-inset hover:border-[#ff2e93] transition">At Focus (F)</button>
+          <button type="button" data-preset="inside_f" class="preset-btn px-3 py-1.5 rounded-xl text-xs font-semibold glass-inset hover:border-[#10b981] transition">Closer than F</button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+          <div class="lg:col-span-7 glass-inset rounded-2xl p-4 sm:p-5 flex flex-col justify-between space-y-4">
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs sm:text-sm font-bold">
+                <span>📏 Object Distance (<span class="font-mono-code text-[#00e5ff]">|u|</span>)</span>
+                <span id="uReadout" class="font-mono-code text-[#00e5ff]">240 cm</span>
+              </div>
+              <input id="uSlider" type="range" min="40" max="420" value="240" class="studio-slider" />
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs sm:text-sm font-bold">
+                <span>🎯 Focal Length (<span class="font-mono-code text-[#fbbf24]">|f|</span>)</span>
+                <span id="fReadout" class="font-mono-code text-[#fbbf24]">100 cm</span>
+              </div>
+              <input id="fSlider" type="range" min="60" max="170" value="100" class="studio-slider gold" />
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-xs sm:text-sm font-bold">
+                <span>📐 Object Height (<span class="font-mono-code text-[#ff2e93]">hₒ</span>)</span>
+                <span id="hReadout" class="font-mono-code text-[#ff2e93]">70 cm</span>
+              </div>
+              <input id="hSlider" type="range" min="30" max="115" value="70" class="studio-slider magenta" />
+            </div>
+          </div>
+
+          <div id="viewfinderCard" class="lg:col-span-5 rounded-2xl p-4 sm:p-5 border border-[#fbbf24]/45 vf-real-glow flex flex-col justify-between space-y-3 text-slate-100">
+            <div class="flex items-center justify-between gap-2">
+              <span id="vfBadge" class="px-3 py-1 rounded-full font-mono-code text-xs font-extrabold bg-[#fbbf24] text-[#050814]">
+                🎬 REAL &amp; INVERTED
+              </span>
+              <span id="vfMagBadge" class="font-mono-code text-xs font-bold text-slate-200">
+                Mag: 0.71×
+              </span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 text-center font-mono-code">
+              <div class="rounded-xl bg-black/45 border border-white/10 p-2">
+                <div class="text-[10px] text-slate-400">IMAGE DIST (v)</div>
+                <div id="vReadout" class="text-xs sm:text-sm font-bold text-[#00e5ff] mt-0.5">-171 cm</div>
+              </div>
+              <div class="rounded-xl bg-black/45 border border-white/10 p-2">
+                <div class="text-[10px] text-slate-400">ORIENTATION</div>
+                <div id="orientReadout" class="text-xs sm:text-sm font-bold text-[#fbbf24] mt-0.5">Upside-Down</div>
+              </div>
+              <div class="rounded-xl bg-black/45 border border-white/10 p-2">
+                <div class="text-[10px] text-slate-400">RELATIVE SIZE</div>
+                <div id="sizeReadout" class="text-xs sm:text-sm font-bold text-[#ff2e93] mt-0.5">Diminished</div>
+              </div>
+            </div>
+
+            <p id="vfSummary" class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              Object is beyond C: real light rays cross in front of the mirror to form a smaller, inverted image you can catch on a screen.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 3: LASER BOUNCE & FOCUS PUZZLE ARENA
+         ========================================================================= -->
+    <section id="laser-puzzle" class="space-y-5 scroll-mt-24">
+      <div class="glass-card rounded-3xl p-5 sm:p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-[#ff2e93]/35">
+        <div>
+          <span class="font-mono-code text-xs font-bold uppercase tracking-widest text-[#ff2e93]">
+            03 • APPLIED PHOTONICS CHALLENGE
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-black mt-0.5">
+            Laser Bounce &amp; Focus Arena
+          </h2>
+          <p class="text-sm text-muted mt-1">
+            Click the <strong class="text-[#00e5ff]">rotatable mirror nodes</strong> in the arena to steer the neon laser around obsidian blockers and charge the <strong class="text-[#10b981]">Target Core</strong>!
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl glass-inset">
+          <button type="button" data-puzzle-lvl="0" class="puzzle-level-btn active px-3.5 py-2 rounded-xl text-xs font-bold">Level 1</button>
+          <button type="button" data-puzzle-lvl="1" class="puzzle-level-btn px-3.5 py-2 rounded-xl text-xs font-bold">Level 2</button>
+          <button type="button" data-puzzle-lvl="2" class="puzzle-level-btn px-3.5 py-2 rounded-xl text-xs font-bold">Level 3</button>
+          <button type="button" data-puzzle-lvl="3" class="puzzle-level-btn px-3.5 py-2 rounded-xl text-xs font-bold">Level 4</button>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-3xl p-4 sm:p-5 space-y-3 border-[#ff2e93]/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span id="puzzleObjective" class="font-bold text-[#00e5ff]">
+            Level 1 — Click the cyan mirror to rotate it 45° and bounce the laser into the Emerald Target!
+          </span>
+          <div class="flex items-center gap-2">
+            <span id="puzzleStatusBadge" class="px-3 py-1 rounded-full font-mono-code font-bold bg-slate-800 text-slate-300">
+              ⚡ AIMING...
+            </span>
+            <button id="resetPuzzleBtn" type="button" class="px-3 py-1 rounded-xl glass-inset hover:border-[#ff2e93] font-bold">
+              ↺ Reset Level
+            </button>
+          </div>
+        </div>
+
+        <div class="w-full aspect-[1000/400] rounded-2xl overflow-hidden bg-[#040712] border border-[#ff2e93]/35">
+          <canvas id="puzzleCanvas" width="1000" height="400"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 4: INTERACTIVE EXPLORER MISSIONS
+         ========================================================================= -->
+    <section id="missions-section" class="space-y-5 scroll-mt-24">
+      <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <span class="font-mono-code text-xs font-bold uppercase tracking-widest text-[#10b981]">
+            04 • HANDS-ON DISCOVERY QUESTS
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-black mt-0.5">
+            Optics Explorer Missions
+          </h2>
+        </div>
+        <div class="font-mono-code text-xs text-muted">
+          Completed: <span id="missionsDoneCount" class="font-bold text-[#10b981]">0</span> / 5
+        </div>
+      </div>
+
+      <div id="missionsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 5: REAL-WORLD OPTICAL WONDERS
+         ========================================================================= -->
+    <section id="wonders-section" class="space-y-5 scroll-mt-24">
+      <div>
+        <span class="font-mono-code text-xs font-bold uppercase tracking-widest text-[#ff2e93]">
+          05 • FROM LAB BENCH TO UNIVERSE
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-black mt-0.5">
+          Real-World Optical Wonders
+        </h2>
+        <p class="text-sm text-muted mt-1">
+          Click <strong class="text-[#00e5ff]">"Load in Big Light Lab"</strong> on any device to simulate its exact optical geometry!
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <article class="glass-card rounded-3xl p-6 space-y-3 border-[#00e5ff]/30">
+          <div class="flex items-center justify-between">
+            <span class="text-3xl">🔭</span>
+            <span class="px-3 py-1 rounded-full font-mono-code text-[11px] font-bold bg-[#00e5ff]/15 text-[#00e5ff]">CONCAVE MIRROR</span>
+          </div>
+          <h3 class="text-xl font-extrabold">Deep-Space Reflecting Telescopes</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Giant segmented concave mirrors (like the James Webb Space Telescope) gather parallel starlight from billions of light-years away and concentrate every photon onto a tiny focal detector.
+          </p>
+          <button type="button" data-wonder="telescope" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#00e5ff]/20 hover:bg-[#00e5ff]/30 text-[#00e5ff] border border-[#00e5ff]/45 transition">
+            🚀 Load in Big Light Lab
+          </button>
+        </article>
+
+        <article class="glass-card rounded-3xl p-6 space-y-3 border-[#ff2e93]/30">
+          <div class="flex items-center justify-between">
+            <span class="text-3xl">🚗</span>
+            <span class="px-3 py-1 rounded-full font-mono-code text-[11px] font-bold bg-[#ff2e93]/15 text-[#ff2e93]">CONVEX MIRROR</span>
+          </div>
+          <h3 class="text-xl font-extrabold">Wide-Angle Side &amp; Blind-Spot Mirrors</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Outward-curving convex mirrors diverge incoming rays, packing three lanes of highway traffic into an upright, diminished virtual image—why objects appear closer than they are!
+          </p>
+          <button type="button" data-wonder="sidemirror" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#ff2e93]/20 hover:bg-[#ff2e93]/30 text-[#ff2e93] border border-[#ff2e93]/45 transition">
+            🚀 Load in Big Light Lab
+          </button>
+        </article>
+
+        <article class="glass-card rounded-3xl p-6 space-y-3 border-[#fbbf24]/30">
+          <div class="flex items-center justify-between">
+            <span class="text-3xl">🔬</span>
+            <span class="px-3 py-1 rounded-full font-mono-code text-[11px] font-bold bg-[#fbbf24]/15 text-[#fbbf24]">CONVEX LENS</span>
+          </div>
+          <h3 class="text-xl font-extrabold">Magnifying Loupes &amp; Camera Objectives</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Place a specimen inside the focal length of a biconvex lens to view a towering upright virtual image, or place it beyond F to project a crisp inverted image onto a camera sensor.
+          </p>
+          <button type="button" data-wonder="magnifier" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#fbbf24]/20 hover:bg-[#fbbf24]/30 text-[#fbbf24] border border-[#fbbf24]/45 transition">
+            🚀 Load in Big Light Lab
+          </button>
+        </article>
+
+        <article class="glass-card rounded-3xl p-6 space-y-3 border-[#10b981]/30">
+          <div class="flex items-center justify-between">
+            <span class="text-3xl">👓</span>
+            <span class="px-3 py-1 rounded-full font-mono-code text-[11px] font-bold bg-[#10b981]/15 text-[#10b981]">CONCAVE LENS</span>
+          </div>
+          <h3 class="text-xl font-extrabold">Myopia Eyeglasses &amp; Door Peepholes</h3>
+          <p class="text-sm text-muted leading-relaxed">
+            Nearsighted eyes focus light slightly ahead of the retina. A diverging concave lens spreads the rays just enough so they land razor-sharp on the retina—and lets security peepholes show a whole hallway!
+          </p>
+          <button type="button" data-wonder="eyeglass" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#10b981]/20 hover:bg-[#10b981]/30 text-[#10b981] border border-[#10b981]/45 transition">
+            🚀 Load in Big Light Lab
+          </button>
+        </article>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         SECTION 6: QUICK OPTICS PRACTICE QUIZ
+         ========================================================================= -->
+    <section id="quiz-section" class="space-y-5 scroll-mt-24 pb-10">
+      <div class="glass-card rounded-3xl p-6 sm:p-8 border-[#fbbf24]/35 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <span class="font-mono-code text-xs font-bold uppercase tracking-widest text-[#fbbf24]">
+              06 • CHECK YOUR INTUITION
+            </span>
+            <h2 class="text-2xl sm:text-3xl font-black mt-0.5">
+              Optics Mastery Challenge
+            </h2>
+          </div>
+          <div class="font-mono-code text-xs font-bold px-3.5 py-1.5 rounded-full glass-inset">
+            Question <span id="quizIndexLabel" class="text-[#00e5ff]">1</span> of <span id="quizTotalLabel">5</span>
+          </div>
+        </div>
+
+        <div id="quizQuestionBox" class="space-y-4">
+          <h3 id="quizPrompt" class="text-lg sm:text-xl font-extrabold leading-snug"></h3>
+          <div id="quizOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+          <div id="quizFeedback" class="hidden rounded-2xl p-4 text-sm leading-relaxed"></div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <span id="quizScoreText" class="font-mono-code text-xs text-muted">Score: 0 / 5</span>
+          <button id="nextQuizBtn" type="button" class="hidden px-5 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm bg-gradient-to-r from-[#00e5ff] to-[#38bdf8] text-[#050814] transition">
+            Next Question →
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       PROJECT FILES INSPECTOR MODAL
+       ========================================================================= -->
+  <div id="exportModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-3xl w-full p-6 space-y-4 border-[#00e5ff]/45">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-xl font-black">📦 Separated Project Files</h3>
+          <p class="text-xs text-muted">Inspect, copy, or download <span class="font-mono-code">index.html</span>, <span class="font-mono-code">styles.css</span>, and <span class="font-mono-code">app.js</span>.</p>
+        </div>
+        <button id="closeExportModal" type="button" class="w-9 h-9 rounded-xl glass-inset font-bold hover:border-[#ff2e93]">✕</button>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div class="flex items-center gap-1.5 p-1 rounded-xl glass-inset">
+          <button type="button" data-export-tab="html" class="export-tab active px-3 py-1.5 rounded-lg text-xs font-bold">index.html</button>
+          <button type="button" data-export-tab="css" class="export-tab px-3 py-1.5 rounded-lg text-xs font-bold">styles.css</button>
+          <button type="button" data-export-tab="js" class="export-tab px-3 py-1.5 rounded-lg text-xs font-bold">app.js</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="copyExportBtn" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold glass-inset hover:border-[#00e5ff]">📋 Copy Code</button>
+          <button id="downloadExportBtn" type="button" class="px-3.5 py-1.5 rounded-xl text-xs font-extrabold bg-[#00e5ff] text-[#050814]">⬇️ Download File</button>
+        </div>
+      </div>
+
+      <pre id="exportCodePreview" class="w-full h-72 overflow-auto rounded-2xl bg-[#040712] border border-slate-800 p-4 font-mono-code text-xs text-slate-200"></pre>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

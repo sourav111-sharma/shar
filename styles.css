@@ -1,0 +1,257 @@
+/* =========================================================================
+   LUMINA — INTERACTIVE MIRRORS & LENSES STUDIO
+   Cosmic-Aurora Optics Laboratory Theme Tokens (Dark & Museum Light Modes)
+   ========================================================================= */
+:root {
+  --bg-space: #050814;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --glass-surface: rgba(11, 17, 38, 0.76);
+  --glass-inset: rgba(6, 10, 26, 0.86);
+  --glass-border: rgba(56, 189, 248, 0.25);
+  --nav-surface: rgba(5, 8, 20, 0.85);
+  --accent-cyan: #00e5ff;
+  --accent-magenta: #ff2e93;
+  --accent-gold: #fbbf24;
+  --accent-emerald: #10b981;
+  --card-shadow: 0 16px 42px rgba(0, 0, 0, 0.52), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.museum-light {
+  --bg-space: #eef4ff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --glass-surface: rgba(255, 255, 255, 0.84);
+  --glass-inset: rgba(241, 245, 255, 0.94);
+  --glass-border: rgba(14, 165, 233, 0.28);
+  --nav-surface: rgba(255, 255, 255, 0.9);
+  --card-shadow: 0 14px 34px rgba(15, 23, 42, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-space);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.font-mono-code {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Radial Nebula Aurora Backdrop */
+.nebula-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 68% 46% at 14% 8%, rgba(0, 229, 255, 0.14), transparent 62%),
+    radial-gradient(ellipse 60% 44% at 86% 12%, rgba(255, 46, 147, 0.13), transparent 60%),
+    radial-gradient(ellipse 56% 46% at 80% 88%, rgba(16, 185, 129, 0.11), transparent 60%),
+    radial-gradient(ellipse 52% 42% at 18% 84%, rgba(251, 191, 36, 0.09), transparent 60%),
+    var(--bg-space);
+  transition: background 0.35s ease;
+}
+
+body.museum-light .nebula-backdrop {
+  background:
+    radial-gradient(ellipse 68% 46% at 14% 8%, rgba(0, 229, 255, 0.19), transparent 62%),
+    radial-gradient(ellipse 60% 44% at 86% 12%, rgba(255, 46, 147, 0.12), transparent 60%),
+    radial-gradient(ellipse 56% 46% at 80% 88%, rgba(16, 185, 129, 0.12), transparent 60%),
+    #eef4ff;
+}
+
+#motesCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 90;
+  pointer-events: none;
+}
+
+/* Glassmorphic Surfaces */
+.glass-card {
+  background: var(--glass-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.25s ease;
+}
+
+.glass-inset {
+  background: var(--glass-inset);
+  border: 1px solid var(--glass-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.top-nav {
+  background: var(--nav-surface);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+/* Interactive Device Tabs */
+.device-tab {
+  transition: all 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--glass-inset);
+  border: 1px solid var(--glass-border);
+}
+.device-tab:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-cyan);
+}
+.device-tab.active {
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.22), rgba(255, 46, 147, 0.18));
+  border-color: #00e5ff;
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.34), inset 0 0 12px rgba(0, 229, 255, 0.14);
+}
+
+/* Rule Selector Pills */
+.rule-pill {
+  transition: all 0.2s ease;
+}
+.rule-pill.active {
+  background: linear-gradient(135deg, #00e5ff, #38bdf8);
+  color: #050814 !important;
+  font-weight: 800;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.45);
+}
+
+/* Custom Precision Sliders */
+input[type="range"].studio-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.28);
+  outline: none;
+}
+input[type="range"].studio-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #00e5ff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.9);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+input[type="range"].studio-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+}
+input[type="range"].studio-slider.magenta::-webkit-slider-thumb {
+  background: #ff2e93;
+  box-shadow: 0 0 14px rgba(255, 46, 147, 0.9);
+}
+input[type="range"].studio-slider.gold::-webkit-slider-thumb {
+  background: #fbbf24;
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.9);
+}
+
+/* Viewfinder Real vs Virtual Styles */
+.vf-real-glow {
+  background: radial-gradient(circle at center, rgba(251, 191, 36, 0.22), rgba(5, 8, 20, 0.96) 76%);
+  box-shadow: inset 0 0 38px rgba(251, 191, 36, 0.18);
+}
+.vf-virtual-glow {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 229, 255, 0.07) 0px,
+      rgba(0, 229, 255, 0.07) 2px,
+      transparent 2px,
+      transparent 6px
+    ),
+    radial-gradient(circle at center, rgba(0, 229, 255, 0.2), rgba(5, 8, 20, 0.96));
+  animation: holoScan 5s linear infinite;
+}
+@keyframes holoScan {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 0 48px, 0 0; }
+}
+
+/* Fullscreen Bench Mode */
+#benchWrapper:fullscreen {
+  background: #050814;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+/* Bench Canvas Cursor & Touch */
+#benchCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+#benchCanvas:active {
+  cursor: grabbing;
+}
+
+/* Toast Entrance */
+@keyframes slideToast {
+  from { opacity: 0; transform: translateX(36px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.toast-card {
+  animation: slideToast 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Laser Puzzle & Modal Polish */
+.puzzle-level-btn {
+  transition: all 0.2s ease;
+}
+.puzzle-level-btn.active {
+  background: linear-gradient(135deg, #ff2e93, #fbbf24);
+  color: #050814 !important;
+  font-weight: 800;
+  box-shadow: 0 0 18px rgba(255, 46, 147, 0.45);
+}
+.puzzle-level-btn.cleared {
+  border-color: rgba(16, 185, 129, 0.65);
+}
+.export-tab.active {
+  background: linear-gradient(135deg, #00e5ff, #38bdf8);
+  color: #050814 !important;
+  font-weight: 800;
+}
+#puzzleCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
